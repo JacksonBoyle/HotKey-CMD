@@ -1,0 +1,9 @@
+Enablment ,Name ,Description ,Category ,Filter ,Unused ,Unused ,Whitelist/Blacklist tied to cloumn E ,all cloumns after H are left available for whitelist/blacklist  
+TRUE,Window move ,"""Hold Alt + Left Mouse Button and drag -> move window"" ",Window Manipulation ,Always active,,,,
+TRUE,Window resize ,"""Hold Alt + Right Mouse Button and drag -> resize window"" ",Window Manipulation ,Always active,,,,
+FALSE,Window minimize ,"""Double?Alt + Left Mouse Button -> minimize window"" ",Window Manipulation ,Always active,,,,
+FALSE,Window maximize ,"""Double?Alt + Right Mouse Button -> maximize window"" ",Window Manipulation ,Always active,,,,
+FALSE,Window close ,"""Double?Alt + Middle Mouse Button -> close window"" ",Window Manipulation ,Always active,,,,
+TRUE,Slash date ,"""ddd -> MM/DD/YYYY "" ",Date ,Active for all windows excluding,,,DIAdem.exe ,Explorer.exe 
+TRUE,Underscore date ,"""zzz -> YYYY/MM/DD"" ",Date ,Always active,,,,
+TRUE,Lone i fix ,"""Replaces i[space] -> I "" ",Spelling ,Always active,,,,
