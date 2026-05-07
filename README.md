@@ -30,3 +30,29 @@ The Engine: This script lives in the User Data folder.
 The Logic: It reads hotkeycmd_path.txt to find the installation directory. It then fetches the newest code from GitHub and overwrites the existing system files.
 
 The Persistence: Because it runs from the User Data folder (which is not included in the GitHub repository), it never "deletes itself" or your custom settings during an update.
+
+
+
+## 🛠 System Architecture & Workflow
+
+This project uses a **Persistent Deployment** strategy. It separates "System Logic" (files that get updated) from "User Data" (your personal settings).
+
+### 📂 Folder Breakdown
+
+| Folder | Purpose | Persistence |
+| :--- | :--- | :--- |
+| `Admin/` | Core scripts and `preupdate.ps1`. | **Volatile** (Overwritten on update) |
+| `Library/` | Default assets and recommended configs. | **Volatile** (Overwritten on update) |
+| `User Data/` | Local pathing and active user CSVs. | **Persistent** (Never touched by updates) |
+
+---
+
+### 🔄 The Update Cycle
+
+1. **`HotKey_Installer.ps1`**: The user's first step. It maps the install path to `User Data/hotkeycmd_path.txt`.
+2. **`Admin/preupdate.ps1`**: Acts as a bridge. It moves the latest `HK_update.ps1` and your active `.csv` files into the `User Data` "safe zone."
+3. **`User Data/HK_update.ps1`**: The engine. It reads the saved path, pulls the latest master ZIP from GitHub, and refreshes the system folders without deleting your personal data.
+
+
+
+---
