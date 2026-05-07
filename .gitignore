@@ -1,1 +1,7 @@
+# --- Project Specific Ignores ---
 User Data/
+
+# --- General System Ignores ---
+*.log
+Thumbs.db
+desktop.ini
