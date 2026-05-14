@@ -1,125 +1,120 @@
 ; ============================================
 ; Hot_Key_menu.ahk
-;
 ; ============================================
 ; Purpose: To give user a complete list of all active HotKeys
-;and read the list from user_meassage.txt
+; and read the list from user_meassage.txt
 ;
-;created by - Jackson Boyle
-;01/25/2026
-;
-;Revision - V0.0
+; Created by - Jackson Boyle
+; Modified: 05/13/2026
 ; ============================================
 
-
-
 #NoEnv
-#SingleInstance, Force ; removes warning box from popping up when overwriting script
+#SingleInstance, Force
 SendMode Input
 SetWorkingDir %A_ScriptDir%
-; --------------------------------------------
-; Auto-elevate
-; --------------------------------------------
+
 if not A_IsAdmin
-    Run *RunAs "%A_ScriptFullPath%" ; run as admin
+    Run *RunAs "%A_ScriptFullPath%"
 
 ; --------------------------------------------
-;menu tray icon
+; Path Setup for Updates
 ; --------------------------------------------
-Menu, Tray, Icon, %A_ScriptDir%\..\..\Images\HK_.ico ;tray icon
+updateFile := A_ScriptDir . "\..\..\Admin\update_available.txt"
+updateText := ""
+if FileExist(updateFile) {
+    FileRead, statusRaw, %updateFile%
+    statusRaw := Trim(statusRaw)
+    if (statusRaw != "" && statusRaw != "no") {
+        updateText := "Update Available: " . statusRaw
+    }
+}
+
+; --------------------------------------------
+; Menu Tray Icon
+; --------------------------------------------
+Menu, Tray, Icon, %A_ScriptDir%\..\..\Images\HK_.ico
 
 ; --------------------------------------------
 ; Include shared context engine
 ; --------------------------------------------
 #Include %A_ScriptDir%\..\Function Library\context_engine.ahk
 
-
-; Define the path to the file
 filePath := A_ScriptDir . "\User_messages.txt"
-
-
-; Initialize the variable to hold the file content
 MyLongMessage := ""
-
-
-
-; Read the content of the file and store it in MyLongMessage
 FileRead, MyLongMessage, %filePath%
 
-
-
-; Create GUI with top button bar
+; Create GUI
 Gui, +AlwaysOnTop +Resize
 Gui, Margin, 10, 10
 
 ; ============================================================
+; UPDATE NOTIFICATION (STRICTLY TEXT ABOVE BUTTONS)
+; ============================================================
+if (updateText != "") {
+    Gui, Font, s10 w600 ; Bold
+    Gui, Add, Text, x10 y10 cRed, %updateText%
+    buttonY := "y35" ; Move buttons down if text is present
+} else {
+    buttonY := "y10" ; Start buttons at top if no update
+}
+
+; ============================================================
 ; TOP BUTTON BAR
 ; ============================================================
-Gui, Add, Button, x10  y10  w150 h30 gAutoCorrect, AutoCorrect
+Gui, Font, s9 w400 ; Reset font
+Gui, Add, Button, x10 %buttonY% w150 h30 gAutoCorrect, AutoCorrect
 Gui, Add, Button, x+10 w200 h30 gMappedDrives, Mapped Network Drive Update
 
-; Gear icon button (small square)
+; Gear icon button
 gear := Chr(0x1F6E0)
-Gui, Font, s20  ; set font size to 20pt
-Gui, Add, Button,  x+10 w40 h30 gSettings, %gear%
-Gui, Font  ; reset to default
+Gui, Font, s20
+Gui, Add, Button, x+10 w40 h30 gSettings, %gear%
+Gui, Font
+
+; Update icon button
+update_sym := Chr(0x1F504)
+Gui, Font, s20
+Gui, Add, Button, x+10 w40 h30 gUpdate, %update_sym%
+Gui, Font
 
 ; ============================================================
 ; MAIN CONTENT AREA
 ; ============================================================
-; Multi-line read-only text viewer
 Gui, Add, Edit, x10 y+15 w600 r30 vMyEdit ReadOnly, %MyLongMessage%
 
-; Search bar + button
 Gui, Add, Edit, x10 y+10 w400 h25 vSearchText
 Gui, Add, Button, x+10 w80 h25 gSearch, Search
-
-; OK / Close button
 Gui, Add, Button, x+10 w80 h25 gOK, OK
-;
+
 MyTitle := "HotKey command menu"
 Gui, Show,, %MyTitle%
 Return
 
+; ============================================================
+; LABELS
+; ============================================================
+
 Search:
 GuiControlGet, SearchText,, SearchText
-
-; Remove the first character if it's a semicolon
 if (SubStr(SearchText, 1, 1) = ";")
-{
     SearchText := SubStr(SearchText, 2)
-}
 
 GuiControlGet, MyEdit,, MyEdit
 MatchingLines := ""
-CurrentLine := 1
-GreatestLine := 0
 ScriptName := ""
 
-
-; Split the content of the edit control into lines
 Loop, Parse, MyEdit, `n, `r
 {
-    ; Check for .ahk and update GreatestLine and ScriptName if found
     If InStr(A_LoopField, ".ahk")
-    {
-        GreatestLine := CurrentLine
         ScriptName := A_LoopField
-    }
 
-    ; Check for the search text and skip lines containing .ahk
     If InStr(A_LoopField, SearchText) && !InStr(A_LoopField, ".ahk")
     {
-        ; Append the result to the output message
         MatchingLines .= A_LoopField . "`n"
         MatchingLines .= "Script Name: " . ScriptName . "`n`n"
     }
-    CurrentLine++
 }
 
-
-
-; Show the results in a custom GUI
 Gui, SearchResults: New, +AlwaysOnTop
 Gui, Add, Text, , The search term was found in the following lines:
 Gui, Add, Edit, w600 r20 ReadOnly -E0x200 vResultEdit, %MatchingLines%
@@ -134,15 +129,14 @@ Return
 OK:
 Gui, Destroy
 ExitApp
+
 GuiClose:
 Gui, Destroy
 ExitApp
+
 GuiEscape:
 Gui, Destroy
 ExitApp
-Return
-
-
 
 AutoCorrect:
 MsgBox, Auto Correct button clicked.
@@ -155,4 +149,9 @@ Return
 Settings:
  Safe_Run(A_ScriptDir . "\Scriptsmith.ahk")
  ExitApp
+Return
+
+Update:
+ ; Recommend running your preupdate.ps1 here
+ MsgBox, 64, Update, Checking for and applying updates...
 Return
