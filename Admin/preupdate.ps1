@@ -1,21 +1,38 @@
-﻿# ==============================================================================
+# ==============================================================================
 # Script: preupdate.ps1
 # Location: C:\HotKey command\Admin\
-# Description: Copies the Update script and Config CSV to User Data via relative paths.
+# Description: Checks connectivity, provides help link on failure, and relocates assets.
 # ==============================================================================
 
-# 1. Define Paths (Relative to the Admin folder)
+# 1. Define Paths and URLs
 $sourceDir = $PSScriptRoot
-
-# Targets
 $targetDir = Join-Path $sourceDir "..\User Data"
+$repoZipUrl = "https://github.com/JacksonBoyle/HotKey-CMD/archive/refs/heads/main.zip"
+$helpUrl    = "https://github.com/JacksonBoyle/HotKey-CMD"
 
 # File Sources
 $updateSource = Join-Path $sourceDir "HK_update.ps1"
 $configSource = Join-Path $sourceDir "..\Library\Main config\config.csv"
 
-# 2. Execution logic
-Write-Host "[*] Starting file relocation..." -ForegroundColor Cyan
+# 2. Connectivity Check (Updated for Security)
+Write-Host "[*] Verifying connection to GitHub..." -ForegroundColor Cyan
+try {
+    # Added -UseBasicParsing to prevent the warning in image_bf305f.png
+    $response = Invoke-WebRequest -Uri $repoZipUrl -Method Head -TimeoutSec 5 -ErrorAction Stop -UseBasicParsing
+    Write-Host " [+] Connection verified." -ForegroundColor Green
+}
+catch {
+    Write-Host "`n [!] Error: No internet connection or GitHub is unreachable." -ForegroundColor Red
+    Write-Host " [!] Please resolve your connection issue and try again." -ForegroundColor Yellow
+    Write-Host " [!] Manual Help/Download: $helpUrl" -ForegroundColor Cyan
+    
+    Write-Host "`n [!] Update aborted." -ForegroundColor Red
+    Pause
+    exit
+}
+
+# 3. Execution logic (File Relocation)
+Write-Host "`n[*] Starting file relocation..." -ForegroundColor Cyan
 
 # Ensure the destination exists
 if (-not (Test-Path $targetDir)) {
@@ -32,11 +49,9 @@ if (Test-Path $updateSource) {
 if (Test-Path $configSource) {
     Copy-Item -Path $configSource -Destination $targetDir -Force
     Write-Host " [+] Relocated: config.csv" -ForegroundColor Green
-} else {
-    Write-Host " [!] Warning: Could not find config.csv at $configSource" -ForegroundColor Yellow
 }
 
-# 3. Launch the Update
+# 4. Launch the Update
 Write-Host "`n[*] Launching update process from User Data..." -ForegroundColor Magenta
 Set-Location -Path $targetDir
 
