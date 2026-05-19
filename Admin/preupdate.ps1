@@ -13,6 +13,7 @@ $helpUrl    = "https://github.com/JacksonBoyle/HotKey-CMD"
 # File Sources
 $updateSource = Join-Path $sourceDir "HK_update.ps1"
 $configSource = Join-Path $sourceDir "..\Library\Main config\config.csv"
+$versionSource = Join-Path $sourceDir "version.txt"
 
 # 2. Connectivity Check (Updated for Security)
 Write-Host "[*] Verifying connection to GitHub..." -ForegroundColor Cyan
@@ -49,6 +50,12 @@ if (Test-Path $updateSource) {
 if (Test-Path $configSource) {
     Copy-Item -Path $configSource -Destination $targetDir -Force
     Write-Host " [+] Relocated: config.csv" -ForegroundColor Green
+}
+
+# Copy version.txt
+if (Test-Path $versionSource) {
+    Copy-Item -Path $versionSource -Destination $targetDir -Force
+    Write-Host " [+] Relocated: version.txt" -ForegroundColor Green
 }
 
 # 4. Launch the Update
