@@ -1,1 +1,2 @@
-
+# Exclude the online CSV from the release ZIP download
+Admin/HK_Version_History.csv export-ignore
