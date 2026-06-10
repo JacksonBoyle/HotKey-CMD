@@ -1,8 +1,23 @@
-﻿# ==============================================================================
+# ==============================================================================
 # Script: update_notification.ps1 (PowerShell)
 # Description: High-DPI scaled safe notification UI that forces buttons to remain
 #              visible using absolute container anchoring.
 # ==============================================================================
+
+# --- NEW GATEKEEPER CHECK ---
+# Up one folder, then into User Data
+$CheckFilePath = Join-Path $PSScriptRoot "..\User Data\Update_notification_enable.txt"
+
+if (Test-Path $CheckFilePath) {
+    # Read text, trim whitespace, and convert to lowercase for comparison
+    $FileContent = (Get-Content -Path $CheckFilePath -Raw).Trim().ToLower()
+    if ($FileContent -ne "true") {
+        exit # Kill script silently if content is not "true"
+    }
+} else {
+    exit # Kill script silently if file does not exist
+}
+# -----------------------------
 
 # 1. Dynamically target the script in the SAME folder
 $TargetScriptName = "preupdate.ps1"
