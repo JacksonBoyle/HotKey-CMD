@@ -30,6 +30,21 @@ if FileExist(updateFile) {
 }
 
 ; --------------------------------------------
+; Read Saved Checkbox State (New Logic)
+; --------------------------------------------
+targetFolder := A_ScriptDir . "\..\..\User Data"
+targetFile   := targetFolder . "\Update_notification_enable.txt"
+initCheckboxState := ""
+
+if FileExist(targetFile) {
+    FileRead, savedState, %targetFile%
+    savedState := Trim(savedState)
+    if (savedState = "true") {
+        initCheckboxState := "Checked" ; Sets the AHK option string to check it
+    }
+}
+
+; --------------------------------------------
 ; Menu Tray Icon
 ; --------------------------------------------
 Menu, Tray, Icon, %A_ScriptDir%\..\..\Images\HK_.ico
@@ -59,23 +74,26 @@ if (updateText != "") {
 }
 
 ; ============================================================
-; TOP BUTTON BAR
+; TOP BUTTON BAR & CHECKBOX
 ; ============================================================
 Gui, Font, s9 w400 ; Reset font
 Gui, Add, Button, x10 %buttonY% w150 h30 gAutoCorrect, AutoCorrect
-Gui, Add, Button, x+10 w200 h30 gMappedDrives, Mapped Network Drive Update
+Gui, Add, Button, x+10 yp w200 h30 gMappedDrives, Mapped Network Drive Update
 
 ; Gear icon button
 gear := Chr(0x1F6E0)
 Gui, Font, s20
-Gui, Add, Button, x+10 w40 h30 gSettings, %gear%
+Gui, Add, Button, x+10 yp w40 h30 gSettings, %gear%
 Gui, Font
 
 ; Update icon button
 update_sym := Chr(0x1F504)
 Gui, Font, s20
-Gui, Add, Button, x+10 w40 h30 gUpdate, %update_sym%
+Gui, Add, Button, x+10 yp w40 h30 gUpdate, %update_sym%
 Gui, Font
+
+; Checkbox placed to the right of the Update button (Dynamically Pre-populated)
+Gui, Add, CheckBox, x+15 yp+5 vUpdateNotifyCB %initCheckboxState%, Update Notification
 
 ; ============================================================
 ; MAIN CONTENT AREA
@@ -83,8 +101,8 @@ Gui, Font
 Gui, Add, Edit, x10 y+15 w600 r30 vMyEdit ReadOnly, %MyLongMessage%
 
 Gui, Add, Edit, x10 y+10 w400 h25 vSearchText
-Gui, Add, Button, x+10 w80 h25 gSearch, Search
-Gui, Add, Button, x+10 w80 h25 gOK, OK
+Gui, Add, Button, x+10 yp w80 h25 gSearch, Search
+Gui, Add, Button, x+10 yp w80 h25 gOK, OK
 
 MyTitle := "HotKey command menu"
 Gui, Show,, %MyTitle%
@@ -127,13 +145,24 @@ Gui, SearchResults: Destroy
 Return
 
 OK:
+; 1. Submit GUI variables to gather whether the checkbox is 1 (true) or 0 (false)
+Gui, Submit, NoHide
+
+; 2. Ensure the folder directory exists before creating the text file
+if !InStr(FileExist(targetFolder), "D") {
+    FileCreateDir, %targetFolder%
+}
+
+; 3. Set string content based on check state and overwrite/create the target file
+fileContent := (UpdateNotifyCB) ? "true" : "false"
+FileDelete, %targetFile%
+FileAppend, %fileContent%, %targetFile%
+
+; 4. Clean up and close app
 Gui, Destroy
 ExitApp
 
 GuiClose:
-Gui, Destroy
-ExitApp
-
 GuiEscape:
 Gui, Destroy
 ExitApp
